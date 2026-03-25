@@ -27,7 +27,7 @@ export default function SettingsPage() {
       initial[p.id] = {
         key: getProviderKey(p.id),
         showKey: false,
-        status: p.isServerSide ? 'ok' : (getProviderKey(p.id) ? 'idle' : 'idle'),
+        status: p.isServerSide ? 'ok' : 'idle',
         detail: p.isServerSide ? 'Built-in server token' : '',
       };
     }

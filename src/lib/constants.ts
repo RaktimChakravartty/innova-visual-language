@@ -1,4 +1,4 @@
-import type { InkMode, Vertical, Composition } from '@/types/database';
+import type { InkMode, Vertical, Composition, GenerationStatus } from '@/types/database';
 
 export const DEFAULT_STYLE_BLOCK = `Hand-drawn editorial ink illustration with confident, gestural brushpen linework. Black ink on white. Variable line weight: heavier on outer contours of bodies and furniture (3-4px equivalent), lighter on interior details like faces, fingers, and screen contents (1-1.5px equivalent). Lines are organic and slightly imperfect with occasional breaks where strokes trail off at edges — conveying editorial confidence, not sloppiness. Human figures have natural proportions (approximately 1:5.5 head-to-body ratio) with distinguishing hair as the primary identifier (wavy strokes, solid black mass, bun shape, short crop, curls). Faces include simple line-drawn eyes, small line nose, optional mouth. Hands are 3-4 finger gestural shorthand. Clothing drawn as contour silhouettes with minimal interior line. Furniture and objects drawn as outline only with no fill. Plants appear as quick leaf shapes in pots, always in black line. The quality of line suggests a Pentel Pocket Brush Pen or Faber-Castell Pitt Artist Pen on smooth paper. Not digitally perfect. Not wobbly. Confident and decisive, like an architect sketching on a napkin. The style feels like editorial illustration from Monocle magazine, The New Yorker, or WeWork — warm, confident, human, and deliberately not digitally perfect.`;
 
@@ -63,6 +63,20 @@ export const SUBJECT_SUGGESTIONS: Record<string, string[]> = {
     'Anniversary celebration', 'Town hall meeting', 'Workshop/training',
     'Networking event', 'Panel discussion', 'Award ceremony', 'Team offsite',
   ],
+};
+
+export const VERTICAL_BADGE_VARIANT: Record<Vertical, 'amber' | 'coral' | 'cobalt' | 'default'> = {
+  space: 'amber',
+  people: 'coral',
+  tech: 'cobalt',
+  master: 'default',
+  custom: 'default',
+};
+
+export const STATUS_BADGE_VARIANT: Record<GenerationStatus, 'success' | 'warning' | 'default'> = {
+  approved: 'success',
+  rejected: 'warning',
+  pending: 'default',
 };
 
 export const DEFAULT_PALETTE = {

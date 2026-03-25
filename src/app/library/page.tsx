@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { getGenerations } from '@/lib/store';
-import { INK_MODE_LABELS, VERTICAL_LABELS, COMPOSITION_LABELS } from '@/lib/constants';
+import { INK_MODE_LABELS, VERTICAL_LABELS, COMPOSITION_LABELS, VERTICAL_BADGE_VARIANT } from '@/lib/constants';
 import type { Generation } from '@/types/database';
 
 export default function LibraryPage() {
@@ -80,7 +80,7 @@ export default function LibraryPage() {
                 {gen.subject && <p className="text-sm text-ink-200 truncate mb-1.5">{gen.subject}</p>}
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="amber">{INK_MODE_LABELS[gen.ink_mode]}</Badge>
-                  <Badge variant="cobalt">{VERTICAL_LABELS[gen.vertical]}</Badge>
+                  <Badge variant={VERTICAL_BADGE_VARIANT[gen.vertical]}>{VERTICAL_LABELS[gen.vertical]}</Badge>
                 </div>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function LibraryPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="amber">{INK_MODE_LABELS[selectedGen.ink_mode]}</Badge>
-              <Badge variant="coral">{VERTICAL_LABELS[selectedGen.vertical]}</Badge>
+              <Badge variant={VERTICAL_BADGE_VARIANT[selectedGen.vertical]}>{VERTICAL_LABELS[selectedGen.vertical]}</Badge>
               <Badge variant="cobalt">{COMPOSITION_LABELS[selectedGen.composition]}</Badge>
             </div>
             {selectedGen.subject && <p className="text-sm text-ink-300">{selectedGen.subject}</p>}

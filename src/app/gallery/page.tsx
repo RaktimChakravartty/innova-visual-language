@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Check,
   X,
@@ -29,6 +29,8 @@ import {
   INK_MODE_LABELS,
   VERTICAL_LABELS,
   COMPOSITION_LABELS,
+  VERTICAL_BADGE_VARIANT,
+  STATUS_BADGE_VARIANT,
 } from '@/lib/constants';
 import type { Generation, InkMode, Vertical, GenerationStatus } from '@/types/database';
 
@@ -48,7 +50,6 @@ export default function GalleryPage() {
   const [density, setDensity] = useState<Density>('comfortable');
   const [batchMode, setBatchMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const data = await getGenerations();
@@ -58,7 +59,7 @@ export default function GalleryPage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const filtered = generations
+  const filtered = useMemo(() => generations
     .filter((g) => filterMode === 'all' || g.ink_mode === filterMode)
     .filter((g) => filterVertical === 'all' || g.vertical === filterVertical)
     .filter((g) => filterStatus === 'all' || g.status === filterStatus)
@@ -71,7 +72,7 @@ export default function GalleryPage() {
       sortNewest
         ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+    ), [generations, filterMode, filterVertical, filterStatus, searchQuery, sortNewest]);
 
   const handleStatus = async (id: string, status: GenerationStatus) => {
     await updateGenerationStatus(id, status);
@@ -117,17 +118,6 @@ export default function GalleryPage() {
     });
   };
 
-  const statusBadge = (s: GenerationStatus) => {
-    switch (s) {
-      case 'approved': return 'success';
-      case 'rejected': return 'warning';
-      default: return 'default';
-    }
-  };
-
-  const verticalBadge = (v: string) => {
-    switch (v) { case 'space': return 'amber'; case 'people': return 'coral'; case 'tech': return 'cobalt'; default: return 'default'; }
-  };
 
   const gridCols = density === 'compact' ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
     : density === 'comfortable' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
@@ -232,8 +222,6 @@ export default function GalleryPage() {
               className={`group bg-ink-900 border rounded-xl overflow-hidden transition-all ${
                 selected.has(gen.id) ? 'border-amber ring-1 ring-amber/30' : 'border-ink-700 hover:border-ink-600'
               }`}
-              onMouseEnter={() => setHoveredId(gen.id)}
-              onMouseLeave={() => setHoveredId(null)}
             >
               {/* Image */}
               <div
@@ -252,7 +240,7 @@ export default function GalleryPage() {
                   </div>
                 )}
                 {/* Hover: show prompt preview */}
-                {!batchMode && hoveredId === gen.id && gen.prompt_full && (
+                {!batchMode && gen.prompt_full && (
                   <div className="absolute inset-0 bg-black/70 p-3 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="text-[10px] text-white/80 font-mono line-clamp-4 leading-relaxed">{gen.prompt_full.slice(0, 200)}...</p>
                     <div className="flex items-center gap-1 mt-2">
@@ -266,11 +254,11 @@ export default function GalleryPage() {
               {/* Info */}
               <div className="p-2.5 space-y-1.5">
                 <div className="flex flex-wrap gap-1">
-                  <Badge variant={verticalBadge(gen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>
+                  <Badge variant={VERTICAL_BADGE_VARIANT[gen.vertical]}>
                     {VERTICAL_LABELS[gen.vertical] || gen.vertical}
                   </Badge>
                   <Badge>{INK_MODE_LABELS[gen.ink_mode]}</Badge>
-                  <Badge variant={statusBadge(gen.status)}>{gen.status}</Badge>
+                  <Badge variant={STATUS_BADGE_VARIANT[gen.status]}>{gen.status}</Badge>
                 </div>
                 {gen.subject && <p className="text-[11px] text-ink-400 truncate">{gen.subject}</p>}
                 <p className="text-[9px] text-ink-500">{new Date(gen.created_at).toLocaleDateString()} &middot; {gen.source}</p>
@@ -297,10 +285,10 @@ export default function GalleryPage() {
               <img src={selectedGen.image_url} alt={selectedGen.subject} className="w-full max-h-[500px] object-contain" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant={verticalBadge(selectedGen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>{VERTICAL_LABELS[selectedGen.vertical]}</Badge>
+              <Badge variant={VERTICAL_BADGE_VARIANT[selectedGen.vertical]}>{VERTICAL_LABELS[selectedGen.vertical]}</Badge>
               <Badge>{INK_MODE_LABELS[selectedGen.ink_mode]}</Badge>
               <Badge>{COMPOSITION_LABELS[selectedGen.composition]}</Badge>
-              <Badge variant={statusBadge(selectedGen.status)}>{selectedGen.status}</Badge>
+              <Badge variant={STATUS_BADGE_VARIANT[selectedGen.status]}>{selectedGen.status}</Badge>
             </div>
             {selectedGen.subject && <p className="text-sm text-ink-300">{selectedGen.subject}</p>}
             {selectedGen.tags.length > 0 && (

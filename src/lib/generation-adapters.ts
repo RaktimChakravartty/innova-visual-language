@@ -1,4 +1,4 @@
-import { getProviderKey } from './providers';
+import { getProviderKey, getAvailableModels } from './providers';
 
 export interface GenerationResult {
   image: string;
@@ -10,8 +10,6 @@ export interface GenerationAdapter {
   id: string;
   generate(prompt: string, negativePrompt: string): Promise<GenerationResult>;
 }
-
-// ── Server-side adapter (routes through /api/generate) ──
 
 class ServerAdapter implements GenerationAdapter {
   name: string;
@@ -26,8 +24,7 @@ class ServerAdapter implements GenerationAdapter {
     this.modelId = modelId;
   }
 
-  async generate(prompt: string, negativePrompt: string): Promise<GenerationResult> {
-    // Get user API key if applicable
+  async generate(prompt: string): Promise<GenerationResult> {
     const apiKey = getProviderKey(this.provider);
 
     const response = await fetch('/api/generate', {
@@ -35,7 +32,6 @@ class ServerAdapter implements GenerationAdapter {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
-        negativePrompt,
         provider: this.provider,
         model: this.modelId,
         apiKey: apiKey || undefined,
@@ -52,8 +48,6 @@ class ServerAdapter implements GenerationAdapter {
   }
 }
 
-// ── Copy Prompt (always available) ──
-
 class CopyPromptAdapter implements GenerationAdapter {
   name = 'Copy Prompt (No API)';
   id = 'copy_prompt';
@@ -63,10 +57,7 @@ class CopyPromptAdapter implements GenerationAdapter {
   }
 }
 
-// ── Registry ──
-
 export function getAvailableAdapters(): GenerationAdapter[] {
-  const { getAvailableModels } = require('./providers');
   const models = getAvailableModels();
   const adapters: GenerationAdapter[] = [];
 

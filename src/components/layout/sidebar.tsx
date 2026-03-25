@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   Pen,
@@ -33,15 +33,14 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close mobile menu on navigation
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (
@@ -55,12 +54,12 @@ export function Sidebar() {
       const item = NAV_ITEMS.find((n) => n.shortcut === key);
       if (item) {
         e.preventDefault();
-        window.location.href = item.href;
+        router.push(item.href);
       }
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [router]);
 
   const sidebarContent = (
     <>

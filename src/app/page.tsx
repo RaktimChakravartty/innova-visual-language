@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Pen,
@@ -10,7 +10,6 @@ import {
   Upload,
   Loader2,
   AlertCircle,
-  ChevronDown,
   RotateCcw,
   ThumbsUp,
   ThumbsDown,
@@ -54,18 +53,14 @@ export default function GeneratorPage() {
   const [activePlatform, setActivePlatform] = useState<PlatformVariant>('universal');
   const [copied, setCopied] = useState<string | null>(null);
 
-  // Generation state
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
-  const [usedModel, setUsedModel] = useState<string | null>(null);
   const [lastGeneration, setLastGeneration] = useState<Generation | null>(null);
 
-  // Data
   const [palette, setPalette] = useState<Palette | null>(null);
   const [styleBlock, setStyleBlock] = useState('');
   const [exclusionsBlock, setExclusionsBlock] = useState('');
-  const [subjectSuggestions, setSubjectSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
@@ -93,23 +88,21 @@ export default function GeneratorPage() {
     }
   }, [vertical, palette]);
 
-  useEffect(() => {
-    const category = vertical === 'space' ? 'workspace' : vertical === 'tech' ? 'technology' : vertical === 'people' ? 'people' : '';
-    const allSuggestions = category ? (SUBJECT_SUGGESTIONS[category] || []) : Object.values(SUBJECT_SUGGESTIONS).flat();
-    setSubjectSuggestions(allSuggestions);
-  }, [vertical]);
-
   const accentColours = inkMode === 'double_register' ? [colour1, colour2] : [colour1];
 
-  const promptParams: PromptParams = {
+  const promptParams: PromptParams = useMemo(() => ({
     inkMode, vertical, composition, subject, accentColours, palette,
     styleBlock: styleBlock || undefined,
     exclusionsBlock: exclusionsBlock || undefined,
     detailLevel,
-  };
+  }), [inkMode, vertical, composition, subject, colour1, colour2, palette, styleBlock, exclusionsBlock, detailLevel]);
 
-  const displayPrompt = assemblePlatformPrompt(promptParams, activePlatform);
-  const rawPrompt = assembleRawPrompt(promptParams);
+  const displayPrompt = useMemo(
+    () => assemblePlatformPrompt(promptParams, activePlatform),
+    [promptParams, activePlatform]
+  );
+
+  const adapters = useMemo(() => getAvailableAdapters(), []);
 
   const handleCopy = useCallback(async (platform?: PlatformVariant) => {
     const text = platform ? assemblePlatformPrompt(promptParams, platform) : displayPrompt;
@@ -118,8 +111,19 @@ export default function GeneratorPage() {
     setTimeout(() => setCopied(null), 2000);
   }, [promptParams, displayPrompt, activePlatform]);
 
+  const buildGeneration = (imageUrl: string, model: string, source: 'generated' | 'uploaded'): Generation => ({
+    id: uuidv4(),
+    prompt_full: assemblePrompt(promptParams),
+    prompt_version: 'v1',
+    ink_mode: inkMode,
+    vertical, composition, subject,
+    accent_colours: accentColours,
+    model, status: 'pending', feedback: null, tags: [],
+    image_url: imageUrl, source,
+    created_at: new Date().toISOString(),
+  });
+
   const handleGenerate = async () => {
-    const adapters = getAvailableAdapters();
     const adapter = adapters.find((a) => a.id === selectedModel);
     if (!adapter || adapter.id === 'copy_prompt') {
       await handleCopy();
@@ -129,29 +133,14 @@ export default function GeneratorPage() {
     setGenerating(true);
     setGeneratedImage(null);
     setGenError(null);
-    setUsedModel(null);
     setLastGeneration(null);
 
     try {
+      const rawPrompt = assembleRawPrompt(promptParams);
       const result = await adapter.generate(rawPrompt, exclusionsBlock);
       setGeneratedImage(result.image);
-      setUsedModel(result.model);
 
-      const gen: Generation = {
-        id: uuidv4(),
-        prompt_full: assemblePrompt(promptParams),
-        prompt_version: 'v1',
-        ink_mode: inkMode,
-        vertical, composition, subject,
-        accent_colours: accentColours,
-        model: result.model,
-        status: 'pending',
-        feedback: null,
-        tags: [],
-        image_url: result.image,
-        source: 'generated',
-        created_at: new Date().toISOString(),
-      };
+      const gen = buildGeneration(result.image, result.model, 'generated');
       await saveGeneration(gen);
       setLastGeneration(gen);
     } catch (err) {
@@ -165,44 +154,18 @@ export default function GeneratorPage() {
   const handleFileUpload = async (file: File) => {
     const imageUrl = await uploadImage(file);
     setGeneratedImage(imageUrl);
-    const gen: Generation = {
-      id: uuidv4(),
-      prompt_full: assemblePrompt(promptParams),
-      prompt_version: 'v1',
-      ink_mode: inkMode,
-      vertical, composition, subject,
-      accent_colours: accentColours,
-      model: 'manual_upload',
-      status: 'pending',
-      feedback: null,
-      tags: [],
-      image_url: imageUrl,
-      source: 'uploaded',
-      created_at: new Date().toISOString(),
-    };
+    const gen = buildGeneration(imageUrl, 'manual_upload', 'uploaded');
     await saveGeneration(gen);
     setLastGeneration(gen);
   };
 
-  const handleApprove = async () => {
+  const handleStatusUpdate = async (status: 'approved' | 'rejected') => {
     if (!lastGeneration) return;
-    await updateGenerationStatus(lastGeneration.id, 'approved');
-    setLastGeneration({ ...lastGeneration, status: 'approved' });
+    await updateGenerationStatus(lastGeneration.id, status);
+    setLastGeneration({ ...lastGeneration, status });
   };
 
-  const handleReject = async () => {
-    if (!lastGeneration) return;
-    await updateGenerationStatus(lastGeneration.id, 'rejected');
-    setLastGeneration({ ...lastGeneration, status: 'rejected' });
-  };
-
-  const adapters = getAvailableAdapters();
   const detailLabel = detailLevel < 40 ? 'Minimal' : detailLevel < 70 ? 'Standard' : 'Maximum';
-
-  // Filter suggestions based on subject input
-  const filteredSuggestions = subject.trim()
-    ? subjectSuggestions.filter((s) => s.toLowerCase().includes(subject.toLowerCase()))
-    : subjectSuggestions;
 
   return (
     <div className="min-h-screen">
@@ -305,7 +268,7 @@ export default function GeneratorPage() {
                 placeholder="Describe the scene..."
                 className="w-full bg-ink-800 border border-ink-700 rounded-lg px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:outline-none focus:ring-1 focus:ring-amber/50 resize-none h-16"
               />
-              {showSuggestions && filteredSuggestions.length > 0 && (
+              {showSuggestions && (
                 <div className="absolute z-20 mt-1 w-full bg-ink-900 border border-ink-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
                   {Object.entries(SUBJECT_SUGGESTIONS).map(([cat, items]) => {
                     const matching = items.filter((s) => !subject.trim() || s.toLowerCase().includes(subject.toLowerCase()));
@@ -450,7 +413,7 @@ export default function GeneratorPage() {
                 <div className="h-64 flex items-center justify-center">
                   <div className="text-center space-y-3">
                     <Loader2 size={28} className="animate-spin text-amber mx-auto" />
-                    <p className="text-ink-300 text-sm">Generating with {usedModel || selectedModel}...</p>
+                    <p className="text-ink-300 text-sm">Generating with {lastGeneration?.model || selectedModel}...</p>
                     <p className="text-ink-500 text-xs">Usually takes 10-30 seconds</p>
                   </div>
                 </div>
@@ -476,20 +439,20 @@ export default function GeneratorPage() {
                     <div className="absolute top-3 right-3 flex gap-1.5">
                       <Badge variant="amber">{INK_MODE_LABELS[inkMode]}</Badge>
                       <Badge variant="cobalt">{COMPOSITION_LABELS[composition]}</Badge>
-                      {usedModel && <Badge variant="success">{usedModel}</Badge>}
+                      {lastGeneration?.model && <Badge variant="success">{lastGeneration.model}</Badge>}
                     </div>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-ink-900">
                     <div className="flex gap-1.5">
                       <Button
                         variant={lastGeneration?.status === 'approved' ? 'primary' : 'secondary'}
-                        size="sm" onClick={handleApprove}
+                        size="sm" onClick={() => handleStatusUpdate('approved')}
                       >
                         <ThumbsUp size={14} /> Approve
                       </Button>
                       <Button
                         variant={lastGeneration?.status === 'rejected' ? 'danger' : 'secondary'}
-                        size="sm" onClick={handleReject}
+                        size="sm" onClick={() => handleStatusUpdate('rejected')}
                       >
                         <ThumbsDown size={14} /> Reject
                       </Button>
