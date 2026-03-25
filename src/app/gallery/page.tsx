@@ -8,10 +8,12 @@ import {
   Download,
   Trash2,
   Eye,
-  Filter,
-  SortAsc,
-  SortDesc,
   Search,
+  Grid3X3,
+  LayoutGrid,
+  Maximize2,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +32,8 @@ import {
 } from '@/lib/constants';
 import type { Generation, InkMode, Vertical, GenerationStatus } from '@/types/database';
 
+type Density = 'compact' | 'comfortable' | 'large';
+
 export default function GalleryPage() {
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +45,10 @@ export default function GalleryPage() {
   const [selectedGen, setSelectedGen] = useState<Generation | null>(null);
   const [tagModalGen, setTagModalGen] = useState<Generation | null>(null);
   const [tagInput, setTagInput] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [density, setDensity] = useState<Density>('comfortable');
+  const [batchMode, setBatchMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const data = await getGenerations();
@@ -49,19 +56,16 @@ export default function GalleryPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const filtered = generations
     .filter((g) => filterMode === 'all' || g.ink_mode === filterMode)
     .filter((g) => filterVertical === 'all' || g.vertical === filterVertical)
     .filter((g) => filterStatus === 'all' || g.status === filterStatus)
-    .filter(
-      (g) =>
-        !searchQuery ||
-        g.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((g) =>
+      !searchQuery ||
+      g.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      g.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
     )
     .sort((a, b) =>
       sortNewest
@@ -71,6 +75,14 @@ export default function GalleryPage() {
 
   const handleStatus = async (id: string, status: GenerationStatus) => {
     await updateGenerationStatus(id, status);
+    await loadData();
+  };
+
+  const handleBatchStatus = async (status: GenerationStatus) => {
+    for (const id of selected) {
+      await updateGenerationStatus(id, status);
+    }
+    setSelected(new Set());
     await loadData();
   };
 
@@ -86,9 +98,7 @@ export default function GalleryPage() {
     await updateGenerationTags(tagModalGen.id, newTags);
     setTagInput('');
     await loadData();
-    setTagModalGen((prev) =>
-      prev ? { ...prev, tags: newTags } : null
-    );
+    setTagModalGen((prev) => prev ? { ...prev, tags: newTags } : null);
   };
 
   const handleRemoveTag = async (tag: string) => {
@@ -96,211 +106,182 @@ export default function GalleryPage() {
     const newTags = tagModalGen.tags.filter((t) => t !== tag);
     await updateGenerationTags(tagModalGen.id, newTags);
     await loadData();
-    setTagModalGen((prev) =>
-      prev ? { ...prev, tags: newTags } : null
-    );
+    setTagModalGen((prev) => prev ? { ...prev, tags: newTags } : null);
   };
 
-  const statusColor = (s: GenerationStatus) => {
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const statusBadge = (s: GenerationStatus) => {
     switch (s) {
-      case 'approved':
-        return 'success';
-      case 'rejected':
-        return 'warning';
-      default:
-        return 'default';
+      case 'approved': return 'success';
+      case 'rejected': return 'warning';
+      default: return 'default';
     }
   };
 
-  const verticalBadgeColor = (v: string) => {
-    switch (v) {
-      case 'space':
-        return 'amber';
-      case 'people':
-        return 'coral';
-      case 'tech':
-        return 'cobalt';
-      default:
-        return 'default';
-    }
+  const verticalBadge = (v: string) => {
+    switch (v) { case 'space': return 'amber'; case 'people': return 'coral'; case 'tech': return 'cobalt'; default: return 'default'; }
   };
+
+  const gridCols = density === 'compact' ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
+    : density === 'comfortable' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
 
   return (
     <div className="min-h-screen p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-white">Gallery</h1>
-          <p className="text-ink-400 mt-1">
-            {filtered.length} illustration{filtered.length !== 1 ? 's' : ''}
-          </p>
+          <h1 className="text-2xl font-serif font-bold text-ink-50">Gallery</h1>
+          <p className="text-ink-500 text-sm mt-0.5">{filtered.length} illustration{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="bg-ink-800 border border-ink-700 rounded-lg pl-9 pr-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:outline-none focus:ring-1 focus:ring-amber/50 w-48"
-            />
+        <div className="flex items-center gap-2">
+          {/* Batch mode */}
+          <Button variant={batchMode ? 'primary' : 'ghost'} size="sm" onClick={() => { setBatchMode(!batchMode); setSelected(new Set()); }}>
+            <CheckSquare size={14} /> {batchMode ? `${selected.size} selected` : 'Select'}
+          </Button>
+          {batchMode && selected.size > 0 && (
+            <>
+              <Button size="sm" onClick={() => handleBatchStatus('approved')}><Check size={14} /> Approve</Button>
+              <Button variant="danger" size="sm" onClick={() => handleBatchStatus('rejected')}><X size={14} /> Reject</Button>
+            </>
+          )}
+
+          {/* Density */}
+          <div className="flex border border-ink-700 rounded-lg overflow-hidden">
+            <button onClick={() => setDensity('compact')} className={`p-1.5 cursor-pointer ${density === 'compact' ? 'bg-ink-800 text-ink-100' : 'text-ink-500 hover:bg-ink-800/50'}`}>
+              <Grid3X3 size={14} />
+            </button>
+            <button onClick={() => setDensity('comfortable')} className={`p-1.5 cursor-pointer ${density === 'comfortable' ? 'bg-ink-800 text-ink-100' : 'text-ink-500 hover:bg-ink-800/50'}`}>
+              <LayoutGrid size={14} />
+            </button>
+            <button onClick={() => setDensity('large')} className={`p-1.5 cursor-pointer ${density === 'large' ? 'bg-ink-800 text-ink-100' : 'text-ink-500 hover:bg-ink-800/50'}`}>
+              <Maximize2 size={14} />
+            </button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter size={14} />
-            Filters
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSortNewest(!sortNewest)}
-          >
-            {sortNewest ? <SortDesc size={14} /> : <SortAsc size={14} />}
-            {sortNewest ? 'Newest' : 'Oldest'}
-          </Button>
         </div>
       </div>
 
-      {/* Filters bar */}
-      {showFilters && (
-        <div className="flex flex-wrap gap-3 mb-6 p-4 bg-ink-900 border border-ink-800 rounded-xl">
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value as InkMode | 'all')}
-            className="bg-ink-800 border border-ink-700 rounded-lg px-3 py-1.5 text-xs text-ink-100"
-          >
-            <option value="all">All Modes</option>
-            {Object.entries(INK_MODE_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-          <select
-            value={filterVertical}
-            onChange={(e) => setFilterVertical(e.target.value as Vertical | 'all')}
-            className="bg-ink-800 border border-ink-700 rounded-lg px-3 py-1.5 text-xs text-ink-100"
-          >
-            <option value="all">All Verticals</option>
-            {Object.entries(VERTICAL_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as GenerationStatus | 'all')}
-            className="bg-ink-800 border border-ink-700 rounded-lg px-3 py-1.5 text-xs text-ink-100"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+      {/* Filter chips + Search */}
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
+        <div className="relative flex-shrink-0">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
+          <input
+            type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search subjects, tags..."
+            className="bg-ink-900 border border-ink-700 rounded-lg pl-9 pr-3 py-1.5 text-[12px] text-ink-100 placeholder:text-ink-500 focus:outline-none focus:ring-1 focus:ring-amber/50 w-52"
+          />
         </div>
-      )}
+
+        {/* Status chips */}
+        {(['all', 'pending', 'approved', 'rejected'] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilterStatus(s)}
+            className={`px-2.5 py-1 rounded-lg text-[11px] border cursor-pointer transition ${
+              filterStatus === s ? 'bg-ink-800 border-amber/50 text-ink-50' : 'border-ink-700 text-ink-400 hover:border-ink-600'
+            }`}
+          >
+            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+          </button>
+        ))}
+
+        <span className="text-ink-700">|</span>
+
+        {/* Mode chips */}
+        <button
+          onClick={() => setFilterMode('all')}
+          className={`px-2.5 py-1 rounded-lg text-[11px] border cursor-pointer transition ${filterMode === 'all' ? 'bg-ink-800 border-amber/50 text-ink-50' : 'border-ink-700 text-ink-400 hover:border-ink-600'}`}
+        >All Modes</button>
+        {(Object.keys(INK_MODE_LABELS) as InkMode[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => setFilterMode(m)}
+            className={`px-2.5 py-1 rounded-lg text-[11px] border cursor-pointer transition ${filterMode === m ? 'bg-ink-800 border-amber/50 text-ink-50' : 'border-ink-700 text-ink-400 hover:border-ink-600'}`}
+          >{INK_MODE_LABELS[m]}</button>
+        ))}
+
+        <button
+          onClick={() => setSortNewest(!sortNewest)}
+          className="ml-auto px-2.5 py-1 rounded-lg text-[11px] border border-ink-700 text-ink-400 hover:border-ink-600 cursor-pointer transition"
+        >{sortNewest ? 'Newest first' : 'Oldest first'}</button>
+      </div>
 
       {/* Grid */}
       {loading ? (
-        <div className="flex items-center justify-center h-64 text-ink-500">
-          Loading...
-        </div>
+        <div className="flex items-center justify-center h-64 text-ink-500">Loading...</div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-ink-400">No illustrations yet</p>
-          <p className="text-ink-600 text-sm mt-1">
-            Generate or upload illustrations from the Generator page
-          </p>
+          <p className="text-ink-400 text-lg">No illustrations yet</p>
+          <p className="text-ink-500 text-sm mt-1">Generate or upload illustrations from the Generator page</p>
+          <a href="/" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber text-ink-950 font-semibold text-sm hover:bg-amber/90 transition">
+            Generate your first illustration
+          </a>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className={`grid ${gridCols} gap-3`}>
           {filtered.map((gen) => (
             <div
               key={gen.id}
-              className="group bg-ink-900 border border-ink-800 rounded-xl overflow-hidden hover:border-ink-600 transition-all"
+              className={`group bg-ink-900 border rounded-xl overflow-hidden transition-all ${
+                selected.has(gen.id) ? 'border-amber ring-1 ring-amber/30' : 'border-ink-700 hover:border-ink-600'
+              }`}
+              onMouseEnter={() => setHoveredId(gen.id)}
+              onMouseLeave={() => setHoveredId(null)}
             >
               {/* Image */}
               <div
                 className="aspect-square bg-white cursor-pointer relative overflow-hidden"
-                onClick={() => setSelectedGen(gen)}
+                onClick={() => batchMode ? toggleSelect(gen.id) : setSelectedGen(gen)}
               >
-                <img
-                  src={gen.image_url}
-                  alt={gen.subject || 'Illustration'}
-                  className="w-full h-full object-contain"
-                />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <Eye size={24} className="text-white" />
-                </div>
+                <img src={gen.image_url} alt={gen.subject || 'Illustration'} className="w-full h-full object-contain" />
+                {/* Batch select checkbox */}
+                {batchMode && (
+                  <div className="absolute top-2 left-2">
+                    {selected.has(gen.id) ? (
+                      <CheckSquare size={20} className="text-amber" />
+                    ) : (
+                      <Square size={20} className="text-ink-400" />
+                    )}
+                  </div>
+                )}
+                {/* Hover: show prompt preview */}
+                {!batchMode && hoveredId === gen.id && gen.prompt_full && (
+                  <div className="absolute inset-0 bg-black/70 p-3 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-[10px] text-white/80 font-mono line-clamp-4 leading-relaxed">{gen.prompt_full.slice(0, 200)}...</p>
+                    <div className="flex items-center gap-1 mt-2">
+                      <Eye size={12} className="text-white/60" />
+                      <span className="text-[9px] text-white/60">Click to view details</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Info */}
-              <div className="p-3 space-y-2">
+              <div className="p-2.5 space-y-1.5">
                 <div className="flex flex-wrap gap-1">
-                  <Badge variant={verticalBadgeColor(gen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>
+                  <Badge variant={verticalBadge(gen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>
                     {VERTICAL_LABELS[gen.vertical] || gen.vertical}
                   </Badge>
                   <Badge>{INK_MODE_LABELS[gen.ink_mode]}</Badge>
-                  <Badge variant={statusColor(gen.status)}>
-                    {gen.status}
-                  </Badge>
+                  <Badge variant={statusBadge(gen.status)}>{gen.status}</Badge>
                 </div>
-                {gen.subject && (
-                  <p className="text-xs text-ink-400 truncate">{gen.subject}</p>
-                )}
-                <p className="text-[10px] text-ink-600">
-                  {new Date(gen.created_at).toLocaleDateString()} &middot;{' '}
-                  {gen.source}
-                </p>
+                {gen.subject && <p className="text-[11px] text-ink-400 truncate">{gen.subject}</p>}
+                <p className="text-[9px] text-ink-500">{new Date(gen.created_at).toLocaleDateString()} &middot; {gen.source}</p>
 
                 {/* Actions */}
-                <div className="flex gap-1 pt-1">
-                  <button
-                    onClick={() => handleStatus(gen.id, 'approved')}
-                    className={`p-1.5 rounded transition cursor-pointer ${
-                      gen.status === 'approved'
-                        ? 'bg-emerald-600/20 text-emerald-400'
-                        : 'text-ink-500 hover:text-emerald-400 hover:bg-ink-800'
-                    }`}
-                    title="Approve"
-                  >
-                    <Check size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleStatus(gen.id, 'rejected')}
-                    className={`p-1.5 rounded transition cursor-pointer ${
-                      gen.status === 'rejected'
-                        ? 'bg-red-600/20 text-red-400'
-                        : 'text-ink-500 hover:text-red-400 hover:bg-ink-800'
-                    }`}
-                    title="Reject"
-                  >
-                    <X size={14} />
-                  </button>
-                  <button
-                    onClick={() => setTagModalGen(gen)}
-                    className="p-1.5 rounded text-ink-500 hover:text-amber hover:bg-ink-800 transition cursor-pointer"
-                    title="Tag"
-                  >
-                    <Tag size={14} />
-                  </button>
-                  <a
-                    href={gen.image_url}
-                    download
-                    className="p-1.5 rounded text-ink-500 hover:text-ink-200 hover:bg-ink-800 transition cursor-pointer"
-                    title="Download"
-                  >
-                    <Download size={14} />
-                  </a>
-                  <button
-                    onClick={() => handleDelete(gen.id)}
-                    className="p-1.5 rounded text-ink-500 hover:text-red-400 hover:bg-ink-800 transition cursor-pointer ml-auto"
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                <div className="flex gap-0.5 pt-0.5">
+                  <button onClick={() => handleStatus(gen.id, 'approved')} className={`p-1 rounded transition cursor-pointer ${gen.status === 'approved' ? 'bg-emerald-600/20 text-emerald-500' : 'text-ink-500 hover:text-emerald-500 hover:bg-ink-800'}`} title="Approve"><Check size={13} /></button>
+                  <button onClick={() => handleStatus(gen.id, 'rejected')} className={`p-1 rounded transition cursor-pointer ${gen.status === 'rejected' ? 'bg-red-600/20 text-red-400' : 'text-ink-500 hover:text-red-400 hover:bg-ink-800'}`} title="Reject"><X size={13} /></button>
+                  <button onClick={() => setTagModalGen(gen)} className="p-1 rounded text-ink-500 hover:text-amber hover:bg-ink-800 transition cursor-pointer" title="Tag"><Tag size={13} /></button>
+                  <a href={gen.image_url} download className="p-1 rounded text-ink-500 hover:text-ink-200 hover:bg-ink-800 transition cursor-pointer" title="Download"><Download size={13} /></a>
+                  <button onClick={() => handleDelete(gen.id)} className="p-1 rounded text-ink-500 hover:text-red-400 hover:bg-ink-800 transition cursor-pointer ml-auto" title="Delete"><Trash2 size={13} /></button>
                 </div>
               </div>
             </div>
@@ -309,106 +290,53 @@ export default function GalleryPage() {
       )}
 
       {/* Detail Modal */}
-      <Modal
-        open={!!selectedGen}
-        onClose={() => setSelectedGen(null)}
-        title="Illustration Detail"
-        className="max-w-3xl"
-      >
+      <Modal open={!!selectedGen} onClose={() => setSelectedGen(null)} title="Illustration Detail" className="max-w-3xl">
         {selectedGen && (
           <div className="space-y-4">
             <div className="bg-white rounded-lg overflow-hidden">
-              <img
-                src={selectedGen.image_url}
-                alt={selectedGen.subject}
-                className="w-full max-h-[500px] object-contain"
-              />
+              <img src={selectedGen.image_url} alt={selectedGen.subject} className="w-full max-h-[500px] object-contain" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant={verticalBadgeColor(selectedGen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>
-                {VERTICAL_LABELS[selectedGen.vertical]}
-              </Badge>
+              <Badge variant={verticalBadge(selectedGen.vertical) as 'amber' | 'coral' | 'cobalt' | 'default'}>{VERTICAL_LABELS[selectedGen.vertical]}</Badge>
               <Badge>{INK_MODE_LABELS[selectedGen.ink_mode]}</Badge>
               <Badge>{COMPOSITION_LABELS[selectedGen.composition]}</Badge>
-              <Badge variant={statusColor(selectedGen.status)}>{selectedGen.status}</Badge>
+              <Badge variant={statusBadge(selectedGen.status)}>{selectedGen.status}</Badge>
             </div>
-            {selectedGen.subject && (
-              <p className="text-sm text-ink-300">{selectedGen.subject}</p>
-            )}
+            {selectedGen.subject && <p className="text-sm text-ink-300">{selectedGen.subject}</p>}
             {selectedGen.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {selectedGen.tags.map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded bg-ink-700 text-[10px] text-ink-300">
-                    {t}
-                  </span>
-                ))}
+                {selectedGen.tags.map((t) => (<span key={t} className="px-2 py-0.5 rounded bg-ink-700 text-[10px] text-ink-300">{t}</span>))}
               </div>
             )}
-            <details className="text-xs">
-              <summary className="text-ink-400 cursor-pointer hover:text-ink-300">
-                View prompt
-              </summary>
-              <pre className="mt-2 text-ink-400 bg-ink-950 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap font-mono">
-                {selectedGen.prompt_full}
-              </pre>
-            </details>
+            <div>
+              <p className="text-[10px] text-ink-500 uppercase tracking-wider mb-1.5 font-semibold">Full Prompt</p>
+              <pre className="text-[11px] text-ink-300 bg-ink-950 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap font-mono leading-relaxed">{selectedGen.prompt_full}</pre>
+            </div>
             <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={() => handleStatus(selectedGen.id, 'approved')}>
-                <Check size={14} /> Approve
-              </Button>
-              <Button variant="danger" size="sm" onClick={() => handleStatus(selectedGen.id, 'rejected')}>
-                <X size={14} /> Reject
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => handleDelete(selectedGen.id)}
-                className="ml-auto"
-              >
-                <Trash2 size={14} /> Delete
-              </Button>
+              <Button size="sm" onClick={() => handleStatus(selectedGen.id, 'approved')}><Check size={14} /> Approve</Button>
+              <Button variant="danger" size="sm" onClick={() => handleStatus(selectedGen.id, 'rejected')}><X size={14} /> Reject</Button>
+              <Button variant="danger" size="sm" onClick={() => handleDelete(selectedGen.id)} className="ml-auto"><Trash2 size={14} /> Delete</Button>
             </div>
           </div>
         )}
       </Modal>
 
       {/* Tag Modal */}
-      <Modal
-        open={!!tagModalGen}
-        onClose={() => setTagModalGen(null)}
-        title="Manage Tags"
-      >
+      <Modal open={!!tagModalGen} onClose={() => setTagModalGen(null)} title="Manage Tags">
         {tagModalGen && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               {tagModalGen.tags.map((t) => (
-                <span
-                  key={t}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-ink-700 text-xs text-ink-300"
-                >
+                <span key={t} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-ink-700 text-xs text-ink-300">
                   {t}
-                  <button
-                    onClick={() => handleRemoveTag(t)}
-                    className="text-ink-500 hover:text-red-400 cursor-pointer"
-                  >
-                    <X size={12} />
-                  </button>
+                  <button onClick={() => handleRemoveTag(t)} className="text-ink-500 hover:text-red-400 cursor-pointer"><X size={12} /></button>
                 </span>
               ))}
-              {tagModalGen.tags.length === 0 && (
-                <p className="text-xs text-ink-500">No tags yet</p>
-              )}
+              {tagModalGen.tags.length === 0 && <p className="text-xs text-ink-500">No tags yet</p>}
             </div>
             <div className="flex gap-2">
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                placeholder="Add a tag..."
-                onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-              />
-              <Button size="md" onClick={handleAddTag}>
-                Add
-              </Button>
+              <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add a tag..." onKeyDown={(e) => e.key === 'Enter' && handleAddTag()} />
+              <Button size="md" onClick={handleAddTag}>Add</Button>
             </div>
           </div>
         )}
