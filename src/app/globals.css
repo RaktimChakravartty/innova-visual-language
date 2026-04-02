@@ -1,25 +1,30 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Space+Mono:wght@400;700&display=swap');
 
 @theme inline {
-  --color-ink-950: #fafaf9;
-  --color-ink-900: #ffffff;
-  --color-ink-800: #f0eeeb;
-  --color-ink-700: #e0ddd8;
-  --color-ink-600: #c5c2bc;
-  --color-ink-500: #8a8680;
-  --color-ink-400: #6b6862;
-  --color-ink-300: #4a4844;
-  --color-ink-200: #2c2a27;
-  --color-ink-100: #1c1a17;
+  /* Light mode (default) — INNOVA brand palette */
+  --color-ink-950: #FAF7F3;
+  --color-ink-900: #FFFFFF;
+  --color-ink-800: #F0EDE8;
+  --color-ink-700: #E8E4DF;
+  --color-ink-600: #C5C1BB;
+  --color-ink-500: #9A958F;
+  --color-ink-400: #6B6862;
+  --color-ink-300: #4A4844;
+  --color-ink-200: #221F20;
+  --color-ink-100: #191919;
   --color-ink-50: #0f0e0d;
 
-  --color-amber: #D4940F;
-  --color-coral: #D85A40;
-  --color-cobalt: #2B5EA7;
+  --color-cinnamon: #D4772E;
+  --color-twilight: #2D4272;
+  --color-hunter: #3D6B4F;
+  --color-amber: #D4772E;
+  --color-coral: #2D4272;
+  --color-cobalt: #3D6B4F;
 
-  --font-display: "Georgia", "Times New Roman", serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "SF Mono", "Fira Code", "JetBrains Mono", monospace;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
 html {
@@ -34,61 +39,35 @@ body {
   min-height: 100vh;
 }
 
-/* ── Dark mode overrides ── */
+/* Dark mode */
 .dark {
-  --color-ink-950: #0e0e10;
-  --color-ink-900: #161618;
+  --color-ink-950: #111113;
+  --color-ink-900: #191919;
   --color-ink-800: #1e1e21;
   --color-ink-700: #2a2a2e;
   --color-ink-600: #3a3a3e;
   --color-ink-500: #6b6b70;
-  --color-ink-400: #8e8e93;
-  --color-ink-300: #aeaeb2;
-  --color-ink-200: #d1d1d6;
-  --color-ink-100: #e5e5ea;
-  --color-ink-50: #f2f2f7;
-
-  --color-amber: #E8A317;
-  --color-coral: #E86A50;
-  --color-cobalt: #4A7FD4;
+  --color-ink-400: #9A958F;
+  --color-ink-300: #C5C1BB;
+  --color-ink-200: #E8E4DF;
+  --color-ink-100: #FAF7F3;
+  --color-ink-50: #FFFFFF;
 }
 
-.dark body,
-.dark {
+.dark body, .dark {
   background: var(--color-ink-950);
   color: var(--color-ink-100);
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink-600);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-ink-500);
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-ink-600); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-500); }
 
-/* Selection */
-::selection {
-  background: rgba(212, 148, 15, 0.25);
-}
+::selection { background: rgba(212, 119, 46, 0.2); }
 
-/* Smooth transitions for theme switching */
-* {
-  transition-property: background-color, border-color;
-  transition-duration: 150ms;
-  transition-timing-function: ease;
-}
-
-/* Focus ring */
-:focus-visible {
-  outline: 2px solid var(--color-amber);
-  outline-offset: 2px;
-}
+/* Font classes */
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+.font-mono { font-family: var(--font-mono); }

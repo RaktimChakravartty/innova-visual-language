@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 import { ThemeProvider } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "INNOVA Ink Studio",
-  description: "AI illustration generation platform powered by The Ink Register style system",
+  title: "INNOVA Visual Language",
+  description: "Production companion to the INNOVA AM Tech brand guidelines — illustration, photography, icons, layout, motion, patterns",
 };
 
 export default function RootLayout({
