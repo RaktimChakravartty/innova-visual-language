@@ -8,8 +8,24 @@ import { Input } from '@/components/ui/input';
 import { ColourPicker } from '@/components/ui/colour-picker';
 import { Modal } from '@/components/ui/modal';
 import { Badge } from '@/components/ui/badge';
+import { ModuleHeader } from '@/components/shared/ModuleHeader';
 import { getPalettes, savePalette, setActivePaletteId, deletePalette } from '@/lib/store';
+import { BRAND, VERTICALS } from '@/lib/constants/brand';
 import type { Palette } from '@/types/database';
+
+const LOCKED_CORE = [
+  { name: 'Charcoal', hex: BRAND.charcoal },
+  { name: 'Text', hex: BRAND.text },
+  { name: 'Ivory', hex: BRAND.ivory },
+  { name: 'Mist', hex: BRAND.mist },
+  { name: 'Stone', hex: BRAND.stone },
+];
+
+const LOCKED_VERTICALS = [
+  { name: 'Cinnamon', hex: BRAND.cinnamon, vertical: 'SPACE' },
+  { name: 'Twilight', hex: BRAND.twilight, vertical: 'PEOPLE' },
+  { name: 'Hunter', hex: BRAND.hunter, vertical: 'TECH' },
+];
 
 function EmptyPalette(): Palette {
   return {
@@ -65,12 +81,45 @@ export default function BrandKitPage() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-serif font-bold text-ink-50">Brand Kit</h1>
-          <p className="text-ink-500 text-sm mt-0.5">Manage colour palettes for The Ink Register</p>
+    <div className="min-h-screen p-8 max-w-[1200px] mx-auto">
+      <ModuleHeader system="Brand Kit" subtitle="INNOVA colour system + custom palette management" />
+
+      {/* Locked INNOVA Palette */}
+      <div className="bg-ink-900 border border-ink-700 rounded-xl p-6 mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="font-display text-base font-semibold text-ink-100">INNOVA Colour System</h2>
+          <span className="font-mono text-[9px] text-ink-500 bg-ink-800 px-2 py-0.5 rounded border border-ink-700">LOCKED</span>
         </div>
+        <div className="mb-5">
+          <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500 mb-2">Core</p>
+          <div className="flex gap-4">
+            {LOCKED_CORE.map((c) => (
+              <div key={c.name} className="text-center">
+                <div className="w-14 h-14 rounded-xl border border-ink-700" style={{ backgroundColor: c.hex }} />
+                <p className="text-[10px] text-ink-300 mt-1.5">{c.name}</p>
+                <p className="font-mono text-[9px] text-ink-500">{c.hex}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500 mb-2">Verticals</p>
+          <div className="flex gap-6">
+            {LOCKED_VERTICALS.map((c) => (
+              <div key={c.name} className="text-center">
+                <div className="w-16 h-16 rounded-xl" style={{ backgroundColor: c.hex }} />
+                <p className="text-[10px] text-ink-300 mt-1.5">{c.name}</p>
+                <p className="font-mono text-[9px] text-ink-500">{c.hex}</p>
+                <p className="font-mono text-[8px] text-ink-600 mt-0.5">{c.vertical}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Palettes */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-display text-base font-semibold text-ink-100">Custom Palettes</h2>
         <Button onClick={() => { setIsNew(true); setEditPalette(EmptyPalette()); }}>
           <Plus size={16} /> New Palette
         </Button>
