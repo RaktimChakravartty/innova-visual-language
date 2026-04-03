@@ -55,16 +55,16 @@ function getInkModeDirective(mode: InkMode, colours: string[], palette: Palette 
     case 'pure_ink':
       return 'Pure black ink on white paper. No colour whatsoever. No grey tones. Solid black fills only for hair and occasional clothing emphasis.';
     case 'single_register': {
-      const colour = colours[0] || (palette?.vertical_space_hex ?? '#E8A317');
+      const colour = colours[0] || (palette?.vertical_space_hex ?? '#D4772E');
       return `Black ink base illustration with ONE accent colour (${colour}) applied as flat solid fill on maximum 20% of image area. Apply colour on ONLY one of: technology screens, OR one architectural plane, OR one clothing item. Never more than one category. Skin tones as flat warm fill when faces are prominent.`;
     }
     case 'double_register': {
-      const primary = colours[0] || (palette?.vertical_space_hex ?? '#E8A317');
-      const secondary = colours[1] || (palette?.vertical_people_hex ?? '#E86A50');
+      const primary = colours[0] || (palette?.vertical_space_hex ?? '#D4772E');
+      const secondary = colours[1] || (palette?.vertical_people_hex ?? '#2D4272');
       return `Black ink base illustration with TWO accent colours. Primary colour (${primary}) at 15% of image area, secondary colour (${secondary}) at 10% of image area. The two colours should not touch or overlap.`;
     }
     case 'tinted_mono': {
-      const tint = colours[0] || (palette?.vertical_tech_hex ?? '#2B5EA7');
+      const tint = colours[0] || (palette?.vertical_tech_hex ?? '#3D6B4F');
       return `No black ink. Entire linework drawn in a single dark colour (${tint}). Fills in lighter tints of the same colour. Duotone effect. The illustration should feel monochromatic and cohesive.`;
     }
   }

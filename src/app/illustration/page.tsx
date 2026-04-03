@@ -45,8 +45,8 @@ export default function GeneratorPage() {
   const [vertical, setVertical] = useState<Vertical>('space');
   const [composition, setComposition] = useState<Composition>('environmental');
   const [subject, setSubject] = useState('');
-  const [colour1, setColour1] = useState('#E8A317');
-  const [colour2, setColour2] = useState('#E86A50');
+  const [colour1, setColour1] = useState('#D4772E');
+  const [colour2, setColour2] = useState('#2D4272');
   const [detailLevel, setDetailLevel] = useState(100);
   const [selectedModel, setSelectedModel] = useState('hf_flux_schnell');
 

@@ -132,13 +132,13 @@ export const STATUS_BADGE_VARIANT: Record<GenerationStatus, 'success' | 'warning
 };
 
 export const DEFAULT_PALETTE = {
-  name: 'The Meridian',
-  core_dark: '#1C1C1E',
-  core_light: '#FAF7F2',
-  vertical_space_name: 'Amber',
-  vertical_space_hex: '#E8A317',
-  vertical_people_name: 'Coral',
-  vertical_people_hex: '#E86A50',
-  vertical_tech_name: 'Cobalt',
-  vertical_tech_hex: '#2B5EA7',
+  name: 'INNOVA Primary',
+  core_dark: '#191919',
+  core_light: '#FAF7F3',
+  vertical_space_name: 'Cinnamon',
+  vertical_space_hex: '#D4772E',
+  vertical_people_name: 'Twilight',
+  vertical_people_hex: '#2D4272',
+  vertical_tech_name: 'Hunter',
+  vertical_tech_hex: '#3D6B4F',
 };

@@ -26,8 +26,12 @@ function setLocal<T>(key: string, data: T) {
 
 export async function getPalettes(): Promise<Palette[]> {
   if (isSupabaseConfigured()) {
-    const { data } = await supabase.from('palettes').select('*').order('created_at', { ascending: true });
-    if (data && data.length > 0) return data;
+    try {
+      const { data } = await supabase.from('palettes').select('*').order('created_at', { ascending: true });
+      if (data && data.length > 0) return data;
+    } catch {
+      // Supabase unavailable, fall through to localStorage
+    }
   }
   const local = getLocal<Palette[]>('ink_palettes', []);
   if (local.length === 0) {
