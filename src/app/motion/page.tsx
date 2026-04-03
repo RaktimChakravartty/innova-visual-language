@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { Copy, Check, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModuleHeader } from '@/components/shared/ModuleHeader';
+import { useToast } from '@/components/shared/Toast';
 
 const TIMING_TABLE = [
   { element: 'Logo reveal (full)', duration: '800ms', easing: 'ease-out', delay: '0ms' },
@@ -111,13 +112,15 @@ function EasingCurve({ curve }: { curve: string }) {
 }
 
 export default function MotionPage() {
+  const { showToast } = useToast();
   const [copied, setCopied] = useState<string | null>(null);
 
   const handleCopy = useCallback(async (key: string, text: string) => {
     await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
-  }, []);
+  }, [showToast]);
 
   return (
     <div className="min-h-screen p-8 max-w-[1000px] mx-auto">

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { Copy, Check, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModuleHeader } from '@/components/shared/ModuleHeader';
+import { useToast } from '@/components/shared/Toast';
 import { BRAND } from '@/lib/constants/brand';
 
 type PatternType = 'scatter' | 'grid_mesh' | 'arc_wave';
@@ -84,6 +85,7 @@ function ArcWave({ density, colours, bg }: { density: number; colours: string[];
 }
 
 export default function PatternsPage() {
+  const { showToast } = useToast();
   const [tab, setTab] = useState<TextureTab>('patterns');
   const [patternType, setPatternType] = useState<PatternType>('scatter');
   const [density, setDensity] = useState(35);
@@ -99,9 +101,10 @@ export default function PatternsPage() {
 
   const handleCopy = useCallback(async (key: string, text: string) => {
     await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
-  }, []);
+  }, [showToast]);
 
   const handleDownloadSVG = () => {
     const svgEl = svgRef.current?.querySelector('svg');

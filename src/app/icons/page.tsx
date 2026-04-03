@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModuleHeader } from '@/components/shared/ModuleHeader';
+import { useToast } from '@/components/shared/Toast';
 import { PLATFORM_LABELS, PLATFORM_CHAR_LIMITS } from '@/lib/prompt-engine';
 import type { PlatformVariant } from '@/lib/prompt-engine';
 
@@ -62,13 +63,14 @@ function buildExplorationPrompt(tier: IconTier, vertical: IconVertical, render: 
 }
 
 export default function IconsPage() {
+  const { showToast } = useToast();
   const [tier, setTier] = useState<IconTier>('tier3');
   const [vertical, setVertical] = useState<IconVertical>('neutral');
   const [render, setRender] = useState<RenderMode>('outline');
   const [size, setSize] = useState<IconSize>('48');
   const [icon, setIcon] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
-  const [showPrimitives, setShowPrimitives] = useState(false);
+  const [showPrimitives, setShowPrimitives] = useState(true);
   const [activePlatform, setActivePlatform] = useState<PlatformVariant>('universal');
 
   const spec = useMemo(() => buildSpec(tier, vertical, render, size, icon), [tier, vertical, render, size, icon]);
@@ -76,9 +78,10 @@ export default function IconsPage() {
 
   const handleCopy = useCallback(async (key: string, text: string) => {
     await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
-  }, []);
+  }, [showToast]);
 
   const suggestions = TIER_SUGGESTIONS[tier];
 

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModuleHeader } from '@/components/shared/ModuleHeader';
+import { useToast } from '@/components/shared/Toast';
 import { FORMATS, getAccentColour, getBgColour, generateCSS, type ApplicationType, type LayoutTemplate, type LayoutVertical, type LayoutBg } from '@/lib/constants/layout';
 
 function GridPreview({ format, vertical, bg }: { format: typeof FORMATS[ApplicationType]; vertical: LayoutVertical; bg: LayoutBg }) {
@@ -36,6 +37,7 @@ function GridPreview({ format, vertical, bg }: { format: typeof FORMATS[Applicat
 }
 
 export default function LayoutGridPage() {
+  const { showToast } = useToast();
   const [appType, setAppType] = useState<ApplicationType>('presentation');
   const [template, setTemplate] = useState<LayoutTemplate>('hero');
   const [vertical, setVertical] = useState<LayoutVertical>('space');
@@ -48,9 +50,10 @@ export default function LayoutGridPage() {
 
   const handleCopy = useCallback(async (what: string, text: string) => {
     await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
     setCopied(what);
     setTimeout(() => setCopied(null), 2000);
-  }, []);
+  }, [showToast]);
 
   const specText = `DIMENSIONS\nFormat: ${format.label}\nSize: ${format.width} × ${format.height} ${format.unit}\nOrientation: ${format.orientation}\nBleed: ${format.bleed}\n\nGRID\nColumns: ${format.columns}\nGutter: ${format.gutter}${format.unit}\nMargins — Top: ${format.margins.top}${format.unit}\nMargins — Bottom: ${format.margins.bottom}${format.unit}\nMargins — Left: ${format.margins.left}${format.unit}\nMargins — Right: ${format.margins.right}${format.unit}\n\nSPACING\nBase: ${format.spaceBase}${format.unit}\nScale: ×2, ×3, ×4, ×6, ×8, ×12\n\nTYPOGRAPHY\nDisplay: ${format.typo.display}\nHeading: ${format.typo.heading}\nBody: ${format.typo.body}\nLabel: ${format.typo.label}\n\nWORDMARK\nPlacement: ${format.wordmark.placement}\nMin width: ${format.wordmark.minWidth}\nClear space: ${format.wordmark.clearSpace}\n\nQuiet zone: ${format.quietZone}`;
 
