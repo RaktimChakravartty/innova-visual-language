@@ -30,14 +30,14 @@ export const SHOT_TYPES: Record<ShotType, { label: string; description: string; 
 };
 
 export const ENVIRONMENT_ELEMENTS = [
-  'Walnut wood (desks, shelving, panelling)',
-  'Cognac leather (chairs, sofas, accessories)',
-  'Brass fixtures (pendant lights, desk lamps, hardware)',
-  'Terracotta ceramics (coffee cups, planters, vessels)',
-  'Monstera / fiddle leaf fig (large statement plants)',
-  'Trailing pothos (shelf/window plants)',
-  'Fluted wood dividers',
-  'Linen/textured fabrics',
+  { label: 'Walnut wood (desks, shelving, panelling)', prompt: 'warm walnut wood surfaces with visible grain, honey-toned in the light' },
+  { label: 'Cognac leather (chairs, sofas, accessories)', prompt: 'worn cognac leather that catches the light with a warm patina' },
+  { label: 'Brass fixtures (pendant lights, desk lamps, hardware)', prompt: 'patinated brass hardware casting warm amber pools of light' },
+  { label: 'Terracotta ceramics (coffee cups, planters, vessels)', prompt: 'handmade terracotta vessels and ceramic cups with matte glaze' },
+  { label: 'Monstera / fiddle leaf fig (large statement plants)', prompt: 'large monstera deliciosa with split leaves, creating dappled shadow patterns' },
+  { label: 'Trailing pothos (shelf/window plants)', prompt: 'trailing golden pothos cascading from walnut shelving' },
+  { label: 'Fluted wood dividers', prompt: 'vertical fluted timber panels creating rhythm and shadow' },
+  { label: 'Linen/textured fabrics', prompt: 'natural linen and raw cotton textiles in cream and oatmeal tones' },
 ] as const;
 
 export const PEOPLE_OPTIONS = [

@@ -37,10 +37,11 @@ import {
   updateGenerationStatus,
 } from '@/lib/store';
 import { getAvailableAdapters } from '@/lib/generation-adapters';
+import { useToast } from '@/components/shared/Toast';
 import type { InkMode, Vertical, Composition, Palette, Generation } from '@/types/database';
 
 export default function GeneratorPage() {
-  // Settings
+  const { showToast } = useToast();
   const [inkMode, setInkMode] = useState<InkMode>('single_register');
   const [vertical, setVertical] = useState<Vertical>('space');
   const [composition, setComposition] = useState<Composition>('environmental');
@@ -109,8 +110,9 @@ export default function GeneratorPage() {
     const text = platform ? assemblePlatformPrompt(promptParams, platform) : displayPrompt;
     await navigator.clipboard.writeText(text);
     setCopied(platform || activePlatform);
+    showToast('Copied to clipboard');
     setTimeout(() => setCopied(null), 2000);
-  }, [promptParams, displayPrompt, activePlatform]);
+  }, [promptParams, displayPrompt, activePlatform, showToast]);
 
   const buildGeneration = (imageUrl: string, model: string, source: 'generated' | 'uploaded'): Generation => ({
     id: uuidv4(),

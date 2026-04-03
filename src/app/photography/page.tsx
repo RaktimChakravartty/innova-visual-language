@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModuleHeader } from '@/components/shared/ModuleHeader';
+import { useToast } from '@/components/shared/Toast';
 import { PLATFORM_LABELS, PLATFORM_CHAR_LIMITS } from '@/lib/prompt-engine';
 import type { PlatformVariant } from '@/lib/prompt-engine';
 import {
@@ -21,7 +22,7 @@ function assemblePhotoPrompt(
   focal: string, aperture: string, angle: string,
 ): string {
   const shot = SHOT_TYPES[shotType];
-  const envDesc = elements.map((i) => ENVIRONMENT_ELEMENTS[i]).join(', ');
+  const envDesc = elements.map((i) => ENVIRONMENT_ELEMENTS[i]?.prompt).filter(Boolean).join('. ');
   const peopleDesc = people === '0' ? '' : `${people} people in frame${diversity === 'custom' ? `, ${customDiversity}` : diversity === 'south_asian' ? ', predominantly South Asian workplace context' : ', mixed ethnicities (South Asian, East Asian, Middle Eastern, diverse)'}. Age range: ${age === 'young' ? '25-35' : age === 'senior' ? '45-60' : '25-55'}.`;
   const colourDesc = colourIntegration === 'natural' ? '' :
     colourIntegration === 'cinnamon' ? 'Brand colour present: warm terracotta and walnut tones prominent.' :
@@ -66,6 +67,7 @@ function formatForPlatform(prompt: string, platform: PlatformVariant): string {
 }
 
 export default function PhotographyPage() {
+  const { showToast } = useToast();
   const [shotType, setShotType] = useState<ShotType>('establishing');
   const [vertical, setVertical] = useState<PhotoVertical>('space');
   const [elements, setElements] = useState<number[]>([0, 2, 3, 4]);
@@ -114,12 +116,14 @@ export default function PhotographyPage() {
     const text = platform ? formatForPlatform(rawPrompt, platform) : displayPrompt;
     await navigator.clipboard.writeText(text);
     setCopied(platform || activePlatform);
+    showToast('Copied to clipboard');
     setTimeout(() => setCopied(null), 2000);
-  }, [rawPrompt, displayPrompt, activePlatform]);
+  }, [rawPrompt, displayPrompt, activePlatform, showToast]);
 
   const handleCopyLightroom = async () => {
     const text = LIGHTROOM_PRESET.map((p) => `${p.param}: ${p.value}`).join('\n');
     await navigator.clipboard.writeText(text);
+    showToast('Preset values copied');
     setCopied('lightroom');
     setTimeout(() => setCopied(null), 2000);
   };
@@ -179,7 +183,7 @@ export default function PhotographyPage() {
               {ENVIRONMENT_ELEMENTS.map((el, i) => (
                 <label key={i} className="flex items-center gap-2 text-[11px] text-ink-300 cursor-pointer hover:text-ink-100">
                   <input type="checkbox" checked={elements.includes(i)} onChange={() => toggleElement(i)} className="rounded border-ink-600 accent-cinnamon" />
-                  {el}
+                  {el.label}
                 </label>
               ))}
             </div>
