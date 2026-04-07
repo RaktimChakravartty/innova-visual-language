@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Colour System — INNOVA Visual Language' };
+export const metadata: Metadata = { title: 'Colour System — INNOVA' };
 
 const VERTICALS = [
   { name: 'Cinnamon', hex: '#D4772E', vertical: 'Space', desc: 'Managed offices and coworking', rgb: '212, 119, 46', cmyk: '0, 44, 78, 17', pantone: '7571 C',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Typography — INNOVA Visual Language' };
+export const metadata: Metadata = { title: 'Typography — INNOVA' };
 
 export default function TypographyPage() {
   return (
