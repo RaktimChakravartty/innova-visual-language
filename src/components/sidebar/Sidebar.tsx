@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   PenTool, Aperture, Grid3X3, Layout, PlayCircle, Hexagon,
-  Image, Bookmark, Palette, BarChart3, Settings,
+  Image, Bookmark, Palette, Settings, BookOpen, Type, Sliders,
   Sun, Moon, Menu, X, ChevronLeft, ChevronRight, Home,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -15,7 +15,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   'pen-tool': PenTool, 'aperture': Aperture, 'grid-3x3': Grid3X3,
   'layout': Layout, 'play-circle': PlayCircle, 'hexagon': Hexagon,
   'image': Image, 'bookmark': Bookmark, 'palette': Palette,
-  'bar-chart': BarChart3, 'settings': Settings, 'home': Home,
+  'settings': Settings, 'home': Home, 'book-open': BookOpen,
+  'type': Type, 'sliders': Sliders,
 };
 
 interface NavItem {
@@ -24,6 +25,12 @@ interface NavItem {
   icon: string;
   shortcut?: string;
 }
+
+const BRAND_ITEMS: NavItem[] = [
+  { href: '/guidelines', label: 'Guidelines', icon: 'book-open', shortcut: undefined },
+  { href: '/colour', label: 'Colour System', icon: 'palette', shortcut: undefined },
+  { href: '/typography', label: 'Typography', icon: 'type', shortcut: undefined },
+];
 
 const MODULE_ITEMS: NavItem[] = [
   { href: '/illustration', label: 'Illustration', icon: 'pen-tool', shortcut: '1' },
@@ -40,14 +47,13 @@ const LIBRARY_ITEMS: NavItem[] = [
 ];
 
 const SYSTEM_ITEMS: NavItem[] = [
-  { href: '/brand-kit', label: 'Brand Kit', icon: 'palette', shortcut: 'B' },
-  { href: '/analytics', label: 'Analytics', icon: 'bar-chart', shortcut: 'A' },
+  { href: '/brand-kit', label: 'Brand Kit', icon: 'sliders', shortcut: 'B' },
   { href: '/settings', label: 'Settings', icon: 'settings', shortcut: 'S' },
 ];
 
 const ALL_ITEMS = [
   { href: '/', label: 'Dashboard', icon: 'home', shortcut: 'D' },
-  ...MODULE_ITEMS, ...LIBRARY_ITEMS, ...SYSTEM_ITEMS,
+  ...BRAND_ITEMS, ...MODULE_ITEMS, ...LIBRARY_ITEMS, ...SYSTEM_ITEMS,
 ];
 
 function NavGroup({ label, items, pathname, collapsed }: { label: string; items: NavItem[]; pathname: string; collapsed: boolean }) {
@@ -158,6 +164,7 @@ export function Sidebar() {
             </Link>
           </div>
         )}
+        <NavGroup label="Brand" items={BRAND_ITEMS} pathname={pathname} collapsed={collapsed} />
         <NavGroup label="Modules" items={MODULE_ITEMS} pathname={pathname} collapsed={collapsed} />
         <NavGroup label="Library" items={LIBRARY_ITEMS} pathname={pathname} collapsed={collapsed} />
         <NavGroup label="System" items={SYSTEM_ITEMS} pathname={pathname} collapsed={collapsed} />
@@ -187,7 +194,7 @@ export function Sidebar() {
         </button>
         {!collapsed && (
           <div className="px-3 py-1">
-            <p className="font-mono text-[8px] text-ink-500">Built for INNOVA AM Tech · v3.0</p>
+            <p className="font-mono text-[8px] text-ink-500">INNOVA AM Tech · Visual Language Platform</p>
           </div>
         )}
       </div>
