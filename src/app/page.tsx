@@ -83,9 +83,9 @@ export default function DashboardPage() {
         <h3 className="font-display text-lg font-semibold text-ink-200 mb-6">How it works</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { step: '01', title: 'Configure', desc: 'Select parameters within any module — ink mode, shot type, icon tier, layout format.' },
-            { step: '02', title: 'Generate', desc: 'The platform assembles a brand-compliant prompt or specification from locked visual rules.' },
-            { step: '03', title: 'Use', desc: 'Copy into Freepik, Recraft, Midjourney, ChatGPT — or export specs for Figma, Illustrator, CSS.' },
+            { step: '01', title: 'Configure', desc: 'Select parameters within any module to define what you need.' },
+            { step: '02', title: 'Generate', desc: 'The platform assembles brand-compliant prompts and specifications.' },
+            { step: '03', title: 'Use', desc: 'Copy into Freepik, Recraft, Midjourney, Illustrator, Figma, or CSS.' },
           ].map((item) => (
             <div key={item.step}>
               <span className="font-mono text-[11px] text-cinnamon">{item.step}</span>

@@ -223,8 +223,8 @@ export default function GalleryPage() {
         <div className="flex items-center justify-center h-64 text-ink-500">Loading...</div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-ink-300 text-lg font-display font-semibold">Your visual library starts here</p>
-          <p className="text-ink-500 text-sm mt-1 max-w-md">Generate prompts in any module, then save outputs to build your reference collection.</p>
+          <p className="text-ink-300 text-lg font-display font-semibold">Your visual library is empty</p>
+          <p className="text-ink-500 text-sm mt-1 max-w-md">Generate assets from any module to start building your collection.</p>
           <a href="/illustration" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cinnamon text-white font-medium text-sm hover:bg-cinnamon/90 transition">
             Go to Illustration →
           </a>

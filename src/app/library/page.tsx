@@ -57,9 +57,9 @@ export default function LibraryPage() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-ink-800 border border-ink-700 flex items-center justify-center">
             <BookOpen size={24} className="text-ink-400" />
           </div>
-          <p className="text-ink-300 text-lg font-display font-semibold">Your curated reference set</p>
+          <p className="text-ink-300 text-lg font-display font-semibold">Reference Collection</p>
           <p className="text-ink-500 text-sm mt-1 max-w-md">
-            Approve items from the Gallery to build your curated reference set. These define the brand standard.
+            Approve items from the Gallery to curate your reference collection.
           </p>
           <a href="/gallery" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cinnamon text-white font-medium text-sm hover:bg-cinnamon/90 transition">
             Go to Gallery →
