@@ -17,6 +17,13 @@ const VERTICAL_COLOURS: Record<VerticalColour, string> = {
   tech: '#3D6B4F',
 };
 
+const ICON_CONTAINER_SIZE: Record<IconSize, number> = {
+  32: 28,
+  48: 40,
+  64: 52,
+  128: 100,
+};
+
 function IconCard({ icon, size, colour, onCopy, onDownload }: {
   icon: IconEntry;
   size: IconSize;
@@ -34,23 +41,26 @@ function IconCard({ icon, size, colour, onCopy, onDownload }: {
       .catch(() => setSvgContent(''));
   }, [icon.path]);
 
+  const containerSize = ICON_CONTAINER_SIZE[size];
+
   return (
     <div
-      className="relative flex flex-col items-center justify-center p-4 border rounded-xl transition-all duration-150 cursor-default"
+      className="relative flex flex-col items-center p-4 border rounded-xl transition-all duration-150 cursor-default"
       style={{
         borderColor: '#D4D0CA',
         backgroundColor: hover ? '#FAF7F3' : 'transparent',
         transform: hover ? 'scale(1.02)' : 'scale(1)',
+        height: size + 72,
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
       <div
-        className="flex items-center justify-center mb-3"
-        style={{ width: size, height: size, color: colour }}
+        className="flex items-center justify-center flex-shrink-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full"
+        style={{ width: containerSize, height: containerSize, color: colour, marginTop: (size - containerSize) / 2 }}
         dangerouslySetInnerHTML={{ __html: svgContent }}
       />
-      <p className="font-mono text-[10px] text-ink-400 text-center truncate w-full">{icon.label}</p>
+      <p className="font-mono text-[10px] text-ink-400 text-center truncate w-full mt-auto">{icon.label}</p>
 
       {hover && (
         <div className="absolute top-2 right-2 flex gap-1">
