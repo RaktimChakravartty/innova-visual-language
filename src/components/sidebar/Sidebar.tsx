@@ -25,7 +25,6 @@ interface NavItem {
   label: string;
   icon: string;
   shortcut?: string;
-  accent?: string;
 }
 
 const BRAND_ITEMS: NavItem[] = [
@@ -35,12 +34,12 @@ const BRAND_ITEMS: NavItem[] = [
 ];
 
 const MODULE_ITEMS: NavItem[] = [
-  { href: '/illustration', label: 'Illustration', icon: 'pen-tool', shortcut: '1', accent: '#D4772E' },
-  { href: '/photography', label: 'Photography', icon: 'aperture', shortcut: '2', accent: '#D4772E' },
-  { href: '/icons', label: 'Icons', icon: 'grid-3x3', shortcut: '3', accent: '#2D4272' },
-  { href: '/layout-grid', label: 'Layout & Grid', icon: 'layout', shortcut: '4', accent: '#3D6B4F' },
-  { href: '/motion', label: 'Motion', icon: 'play-circle', shortcut: '5', accent: '#3D6B4F' },
-  { href: '/patterns', label: 'Patterns & Textures', icon: 'hexagon', shortcut: '6', accent: '#3D6B4F' },
+  { href: '/illustration', label: 'Illustration', icon: 'pen-tool', shortcut: '1' },
+  { href: '/photography', label: 'Photography', icon: 'aperture', shortcut: '2' },
+  { href: '/icons', label: 'Icons', icon: 'grid-3x3', shortcut: '3' },
+  { href: '/layout-grid', label: 'Layout & Grid', icon: 'layout', shortcut: '4' },
+  { href: '/motion', label: 'Motion', icon: 'play-circle', shortcut: '5' },
+  { href: '/patterns', label: 'Patterns & Textures', icon: 'hexagon', shortcut: '6' },
 ];
 
 const LIBRARY_ITEMS: NavItem[] = [
@@ -68,10 +67,9 @@ function NavGroup({ label, items, pathname, collapsed }: { label: string; items:
         </p>
       )}
       <div className="space-y-0.5">
-        {items.map(({ href, label, icon, shortcut, accent }) => {
+        {items.map(({ href, label, icon, shortcut }) => {
           const Icon = ICON_MAP[icon] || Home;
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-          const activeAccent = accent || '#D4772E';
           return (
             <Link
               key={href}
@@ -82,9 +80,8 @@ function NavGroup({ label, items, pathname, collapsed }: { label: string; items:
                 collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2',
                 isActive
                   ? 'bg-ink-800 text-ink-50 font-medium'
-                  : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/40'
+                  : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/30'
               )}
-              style={isActive && !collapsed ? { borderLeft: `2px solid ${activeAccent}`, paddingLeft: '10px' } : undefined}
             >
               <Icon size={collapsed ? 18 : 15} strokeWidth={isActive ? 2 : 1.5} />
               {!collapsed && (
@@ -149,9 +146,8 @@ export function Sidebar() {
               'flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 mb-3',
               pathname === '/'
                 ? 'bg-ink-800 text-ink-50 font-medium'
-                : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/40'
+                : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/30'
             )}
-            style={pathname === '/' ? { borderLeft: '2px solid #D4772E', paddingLeft: '10px' } : undefined}
           >
             <Home size={15} strokeWidth={pathname === '/' ? 2 : 1.5} />
             <span className="text-[13px] flex-1">Dashboard</span>
@@ -161,7 +157,7 @@ export function Sidebar() {
           <div className="mb-3">
             <Link href="/" title="Dashboard" className={cn(
               'flex justify-center px-2 py-2.5 rounded-lg transition-all',
-              pathname === '/' ? 'bg-ink-800 text-ink-50' : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/40'
+              pathname === '/' ? 'bg-ink-800 text-ink-50' : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800/30'
             )}>
               <Home size={18} />
             </Link>
@@ -177,7 +173,7 @@ export function Sidebar() {
         {!collapsed ? (
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] text-ink-400 hover:text-ink-200 hover:bg-ink-800/40 transition cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] text-ink-400 hover:text-ink-200 hover:bg-ink-800/30 transition cursor-pointer"
           >
             <span className="flex items-center gap-2">
               {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -191,14 +187,14 @@ export function Sidebar() {
             </div>
           </button>
         ) : (
-          <button onClick={toggleTheme} className="w-full flex justify-center px-2 py-2.5 rounded-lg text-ink-400 hover:text-ink-200 hover:bg-ink-800/40 transition cursor-pointer" title={theme === 'light' ? 'Dark mode' : 'Light mode'}>
+          <button onClick={toggleTheme} className="w-full flex justify-center px-2 py-2.5 rounded-lg text-ink-400 hover:text-ink-200 hover:bg-ink-800/30 transition cursor-pointer" title={theme === 'light' ? 'Dark mode' : 'Light mode'}>
             {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
           </button>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            'w-full flex items-center gap-2.5 rounded-lg text-[13px] text-ink-400 hover:text-ink-200 hover:bg-ink-800/40 transition cursor-pointer',
+            'w-full flex items-center gap-2.5 rounded-lg text-[13px] text-ink-400 hover:text-ink-200 hover:bg-ink-800/30 transition cursor-pointer',
             collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2'
           )}
         >
@@ -227,7 +223,7 @@ export function Sidebar() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute top-4 right-4">
-              <button onClick={() => setMobileOpen(false)} className="text-ink-400 hover:text-ink-200 cursor-pointer p-1 rounded-lg hover:bg-ink-800/40"><X size={18} /></button>
+              <button onClick={() => setMobileOpen(false)} className="text-ink-400 hover:text-ink-200 cursor-pointer p-1 rounded-lg hover:bg-ink-800/30"><X size={18} /></button>
             </div>
             {content}
           </aside>
