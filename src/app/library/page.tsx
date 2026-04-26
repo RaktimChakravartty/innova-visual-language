@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Download, Eye, Grid3X3, List, BookOpen } from 'lucide-react';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
@@ -33,11 +35,11 @@ export default function LibraryPage() {
   };
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 md:p-8 animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-serif font-bold text-ink-50">Reference Library</h1>
-          <p className="text-ink-500 text-sm mt-0.5">{approved.length} approved illustration{approved.length !== 1 ? 's' : ''} , the brand standard</p>
+          <p className="text-ink-500 text-sm mt-0.5">{approved.length} approved illustration{approved.length !== 1 ? 's' : ''}, the brand standard</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex border border-ink-700 rounded-lg overflow-hidden">
@@ -51,20 +53,9 @@ export default function LibraryPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-64 text-ink-500">Loading...</div>
+        <LoadingState message="Loading library..." />
       ) : approved.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-ink-800 border border-ink-700 flex items-center justify-center">
-            <BookOpen size={24} className="text-ink-400" />
-          </div>
-          <p className="text-ink-300 text-lg font-display font-semibold">Reference Collection</p>
-          <p className="text-ink-500 text-sm mt-1 max-w-md">
-            Approve items from the Gallery to curate your reference collection.
-          </p>
-          <a href="/gallery" className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cinnamon text-white font-medium text-sm hover:bg-cinnamon/90 transition">
-            Go to Gallery →
-          </a>
-        </div>
+        <EmptyState icon={BookOpen} title="Reference Collection" description="Approve items from the Gallery to curate your reference collection." action={{ label: 'Go to Gallery', href: '/gallery' }} />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
           {approved.map((gen) => (
