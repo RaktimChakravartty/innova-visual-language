@@ -48,13 +48,6 @@ export default function DashboardPage() {
             </span>
           ))}
         </div>
-        <p className="font-mono text-[9px] mt-3 animate-fade-in stagger-3">
-          <span style={{ color: '#D4772E' }}>SPACE</span>
-          <span className="text-ink-600"> · </span>
-          <span style={{ color: '#2D4272' }}>PEOPLE</span>
-          <span className="text-ink-600"> · </span>
-          <span style={{ color: '#3D6B4F' }}>TECH</span>
-        </p>
       </div>
 
       {/* Two-column layout */}
